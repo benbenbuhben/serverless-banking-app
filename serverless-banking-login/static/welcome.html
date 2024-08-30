@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome</title>
+</head>
+
+<body>
+  <h1>Welcome to the Bank!</h1>
+  <p id="welcomeMessage"></p>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/dev/welcome', {
+        headers: { Authorization: token },
+      });
+
+      const data = await response.json();
+      document.getElementById('welcomeMessage').textContent = data.message;
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,88 @@
+service: serverless-banking-login
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-west-2
+  environment:
+    COGNITO_USER_POOL_CLIENT_ID:
+      Ref: CognitoUserPoolClient
+
+functions:
+  register:
+    handler: handler.register
+    events:
+      - http:
+          path: register
+          method: post
+          cors: true
+
+  login:
+    handler: handler.login
+    events:
+      - http:
+          path: login
+          method: post
+          cors: true
+
+  get-index:
+    handler: handler.getIndex
+    events:
+      - http:
+          path: /
+          method: get
+          cors: true
+
+  get-register:
+    handler: handler.getRegister
+    events:
+      - http:
+          path: /register.html
+          method: get
+          cors: true
+
+  get-login:
+    handler: handler.getLogin
+    events:
+      - http:
+          path: /login.html
+          method: get
+          cors: true
+
+  get-welcome:
+    handler: handler.getWelcome
+    events:
+      - http:
+          path: /welcome.html
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: bankingLoginUserPool
+        AutoVerifiedAttributes:
+          - email
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: bankingLoginUserPoolClient
+        UserPoolId:
+          Ref: CognitoUserPool
+        GenerateSecret: false
+
+    UserPoolAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: bankingLoginAuthorizer
+        Type: COGNITO_USER_POOLS
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        IdentitySource: method.request.header.Authorization
+        ProviderARNs:
+          - Fn::GetAtt:
+              - CognitoUserPool
+              - Arn
