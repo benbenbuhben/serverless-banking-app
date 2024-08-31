@@ -1,4 +1,4 @@
-service: serverless-banking-login
+service: serverless-banking-login-hosted-ui-v2
 
 provider:
   name: aws
@@ -6,46 +6,14 @@ provider:
   region: us-west-2
   environment:
     COGNITO_USER_POOL_CLIENT_ID:
-      Ref: CognitoUserPoolClient
+      Ref: NewCognitoUserPoolClient
 
 functions:
-  register:
-    handler: handler.register
-    events:
-      - http:
-          path: register
-          method: post
-          cors: true
-
-  login:
-    handler: handler.login
-    events:
-      - http:
-          path: login
-          method: post
-          cors: true
-
   get-index:
     handler: handler.getIndex
     events:
       - http:
           path: /
-          method: get
-          cors: true
-
-  get-register:
-    handler: handler.getRegister
-    events:
-      - http:
-          path: /register.html
-          method: get
-          cors: true
-
-  get-login:
-    handler: handler.getLogin
-    events:
-      - http:
-          path: /login.html
           method: get
           cors: true
 
@@ -57,32 +25,59 @@ functions:
           method: get
           cors: true
 
+  protected-welcome:
+    handler: handler.protectedWelcome
+    events:
+      - http:
+          path: /welcome
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: NewUserPoolAuthorizer
+
 resources:
   Resources:
-    CognitoUserPool:
+    NewCognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
-        UserPoolName: bankingLoginUserPool
+        UserPoolName: NewBankingLoginUserPoolV2
+        UsernameAttributes:
+          - email
         AutoVerifiedAttributes:
           - email
 
-    CognitoUserPoolClient:
+    NewCognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
-        ClientName: bankingLoginUserPoolClient
+        ClientName: NewBankingLoginUserPoolClientV2
         UserPoolId:
-          Ref: CognitoUserPool
+          Ref: NewCognitoUserPool
         GenerateSecret: false
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        AllowedOAuthFlows:
+          - implicit
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+        CallbackURLs:
+          - "https://vqohnwkggl.execute-api.us-west-2.amazonaws.com/dev/welcome.html"
+        LogoutURLs:
+          - "https://vqohnwkggl.execute-api.us-west-2.amazonaws.com/dev/"
 
-    UserPoolAuthorizer:
+    NewUserPoolAuthorizer:
       Type: AWS::ApiGateway::Authorizer
       Properties:
-        Name: bankingLoginAuthorizer
+        Name: NewBankingLoginAuthorizerV2
         Type: COGNITO_USER_POOLS
         RestApiId:
           Ref: ApiGatewayRestApi
         IdentitySource: method.request.header.Authorization
         ProviderARNs:
           - Fn::GetAtt:
-              - CognitoUserPool
+              - NewCognitoUserPool
               - Arn
