@@ -1,83 +1,18 @@
-service: serverless-banking-login-hosted-ui-v2
+service: serverless-banking-login-amplify-hosted
 
 provider:
   name: aws
   runtime: nodejs20.x
-  region: us-west-2
-  environment:
-    COGNITO_USER_POOL_CLIENT_ID:
-      Ref: NewCognitoUserPoolClient
+  region: us-east-2
 
 functions:
-  get-index:
-    handler: handler.getIndex
+  fetchUserData:
+    handler: handler.fetchUserData
     events:
       - http:
-          path: /
-          method: get
-          cors: true
-
-  get-welcome:
-    handler: handler.getWelcome
-    events:
-      - http:
-          path: /welcome.html
-          method: get
-          cors: true
-
-  protected-welcome:
-    handler: handler.protectedWelcome
-    events:
-      - http:
-          path: /welcome
+          path: user/data
           method: get
           cors: true
           authorizer:
             type: COGNITO_USER_POOLS
-            authorizerId:
-              Ref: NewUserPoolAuthorizer
-
-resources:
-  Resources:
-    NewCognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: NewBankingLoginUserPoolV2
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-
-    NewCognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: NewBankingLoginUserPoolClientV2
-        UserPoolId:
-          Ref: NewCognitoUserPool
-        GenerateSecret: false
-        ExplicitAuthFlows:
-          - ALLOW_USER_PASSWORD_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-        AllowedOAuthFlows:
-          - implicit
-        AllowedOAuthScopes:
-          - email
-          - openid
-          - profile
-        CallbackURLs:
-          - "https://vqohnwkggl.execute-api.us-west-2.amazonaws.com/dev/welcome.html"
-        LogoutURLs:
-          - "https://vqohnwkggl.execute-api.us-west-2.amazonaws.com/dev/"
-
-    NewUserPoolAuthorizer:
-      Type: AWS::ApiGateway::Authorizer
-      Properties:
-        Name: NewBankingLoginAuthorizerV2
-        Type: COGNITO_USER_POOLS
-        RestApiId:
-          Ref: ApiGatewayRestApi
-        IdentitySource: method.request.header.Authorization
-        ProviderARNs:
-          - Fn::GetAtt:
-              - NewCognitoUserPool
-              - Arn
+            arn: arn:aws:cognito-idp:us-east-2:992382508838:userpool/us-east-2_XVEe527sL

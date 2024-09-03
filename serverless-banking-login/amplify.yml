@@ -1,0 +1,25 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: dist # or 'build' if that's your output directory
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+  customHeaders:
+    - pattern: "**/*"
+      headers:
+        - key: "Cache-Control"
+          value: "no-cache"
+  redirects:
+    - source: "</*|*.html>"
+      target: "/index.html"
+      status: 200

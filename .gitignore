@@ -1,2 +1,54 @@
-node_modules
-.serverless
+# Node.js dependencies
+node_modules/
+
+# Serverless framework build artifacts
+.serverless/
+
+# Build output directories (for Vite or similar tools)
+dist/
+
+# Amplify configuration and build artifacts
+amplify/.config/
+amplify/#current-cloud-backend/
+amplify/.cache/
+amplify/backend/amplify-meta.json
+amplify/backend/awscloudformation/
+amplify/backend/tags.json
+amplify/team-provider-info.json
+
+# Vite specific cache
+.vite/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Output of ESLint
+.eslintcache
+
+# IDE or editor-specific files (optional, depending on your setup)
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage directory (for testing)
+coverage/
+
+# Environment variable files (if used)
+.env
+.env.local
+.env.*.local
+
+# Package lock files (optional)
+package-lock.json
+yarn.lock
+
+# Miscellaneous
+*.log
+*.temp
+*.tmp
