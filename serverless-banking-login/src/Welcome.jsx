@@ -5,41 +5,37 @@ import { fetchAuthSession } from '@aws-amplify/auth';
 function Welcome() {
   const { user, signOut } = useAuthenticator((context) => [context.user]);
   const [userData, setUserData] = useState(null);
+  const [noUserData, setNoUserData] = useState(false);
 
   useEffect(() => {
     async function fetchUserSession() {
       try {
-        console.log('Attempting to fetch the user session...');
-        const session = await fetchAuthSession();   // Fetch the authentication session
-        console.log('Session fetched:', session);
-
+        const session = await fetchAuthSession();
         const idToken = session?.tokens?.idToken?.toString();
-        console.log('Extracted ID Token:', idToken);
 
         if (idToken) {
-          console.log('Attempting to fetch user data from the API...');
-          fetch('https://270lb8ozjf.execute-api.us-east-2.amazonaws.com/dev/user/data', {
+          const response = await fetch('https://270lb8ozjf.execute-api.us-east-2.amazonaws.com/dev/user/data', {
             method: 'GET',
             headers: {
               Authorization: `Bearer ${idToken}`,
             },
-          })
-            .then(response => {
-              console.log('API response received:', response);
-              return response.json();
-            })
-            .then(data => {
-              console.log('User data received from API:', data);
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data) {
               setUserData(data);
-            })
-            .catch(error => {
-              console.error("Error fetching user data from API:", error);
-            });
+            } else {
+              setNoUserData(true);
+            }
+          } else {
+            // Handle non-OK responses
+          }
         } else {
-          console.error("ID token not found in session");
+          // Handle case where ID token is missing
         }
       } catch (error) {
-        console.error("Error fetching user session:", error);
+        // Handle errors fetching the user session or data
       }
     }
 
@@ -54,7 +50,9 @@ function Welcome() {
       {user ? (
         <>
           <Text>Welcome, {user.signInDetails?.loginId ? user.signInDetails.loginId : 'User'}!</Text>
-          {userData && (
+          {noUserData ? (
+            <Text>No user data found.</Text>
+          ) : userData ? (
             <View marginTop="20px">
               <Text>User ID: {userData.userId}</Text>
               <Text>Name: {userData.name}</Text>
@@ -62,6 +60,8 @@ function Welcome() {
               <Text>Account Balance: ${userData.accountBalance.toFixed(2)}</Text>
               <Text>Last Transaction: {userData.lastTransaction.description} - ${userData.lastTransaction.amount.toFixed(2)} on {userData.lastTransaction.date}</Text>
             </View>
+          ) : (
+            <Text>Loading...</Text>
           )}
         </>
       ) : (
